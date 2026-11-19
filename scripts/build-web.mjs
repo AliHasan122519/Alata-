@@ -34,6 +34,33 @@ const supaKey = (bundle.match(/eyJ[A-Za-z0-9_-]{15,}\.[A-Za-z0-9_-]{15,}\.[A-Za-
 }) || "";
 if (!supaUrl || !supaKey) throw new Error("Could not find the Supabase URL/key in the site bundle");
 
+// Optional: point the app at its OWN database instead of the original site's (config/backend.json: { "url", "key" }).
+// Empty = keep the original backend. Only the PUBLIC anon key is accepted (a service_role key is refused).
+let backendUrl = supaUrl, backendKey = supaKey;
+let override = {};
+try { override = JSON.parse(await readFile("config/backend.json", "utf8")); } catch { /* no override */ }
+if (override.url || override.key) {
+  const m = /^https:\/\/([a-z0-9]+)\.supabase\.co$/.exec(String(override.url || "").trim());
+  if (!m) throw new Error('config/backend.json: "url" must look like https://<project-ref>.supabase.co');
+  let payload;
+  try { payload = JSON.parse(Buffer.from(String(override.key).trim().split(".")[1], "base64url").toString()); }
+  catch { throw new Error('config/backend.json: "key" is not a valid Supabase key'); }
+  if (payload.role !== "anon") throw new Error('config/backend.json: the key must be the PUBLIC "anon" key (found role "' + payload.role + '")');
+  if (payload.ref !== m[1]) throw new Error("config/backend.json: the key belongs to a different project than the url");
+  backendUrl = override.url.trim(); backendKey = override.key.trim();
+  let replaced = 0;
+  for (const f of (await readdir("dist/assets")).filter((x) => x.endsWith(".js"))) {
+    const path = `dist/assets/${f}`;
+    let t = await readFile(path, "utf8");
+    if (t.includes(supaUrl) || t.includes(supaKey)) {
+      t = t.split(supaUrl).join(backendUrl).split(supaKey).join(backendKey);
+      await writeFile(path, t); replaced++;
+    }
+  }
+  if (!replaced) throw new Error("Backend override requested but nothing to replace in the bundle");
+  console.log("backend override applied ->", backendUrl);
+}
+
 await writeFile(
   "dist/manifest.webmanifest",
   JSON.stringify(
@@ -77,8 +104,8 @@ const head = [
   `<style id="alataa-dark">${darkCss}</style>`,
   `<style id="alataa-font">${fontCss}</style>`,
   `<link rel="preload" href="/fonts/Dubai-Bold.woff2" as="font" type="font/woff2" crossorigin>`,
-  `<meta name="supabase-url" content="${supaUrl}">`,
-  `<meta name="supabase-key" content="${supaKey}">`,
+  `<meta name="supabase-url" content="${backendUrl}">`,
+  `<meta name="supabase-key" content="${backendKey}">`,
 ].filter(Boolean).join("\n    ");
 html = html.replace("</head>", `    ${head}\n  </head>`).replace("</body>", '  <script src="/shell.js"></script>\n  <script src="/refund-all.js"></script>\n  <script src="/hall.js"></script>\n  <script src="/theme.js"></script>\n</body>');
 await writeFile("dist/index.html", html);
