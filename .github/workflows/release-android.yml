@@ -23,22 +23,35 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Without the signing secrets an APK would be useless (Android refuses to update an app signed with another key),
+  # so on a normal push we SKIP quietly instead of failing every time. A manual run still fails loudly.
+  precheck:
+    runs-on: ubuntu-latest
+    outputs:
+      ok: ${{ steps.sec.outputs.ok }}
+    steps:
+      - id: sec
+        env:
+          KS: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          PW: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          if [ -n "$KS" ] && [ -n "$PW" ]; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+            MSG="Signing secrets ANDROID_KEYSTORE_BASE64 / ANDROID_KEYSTORE_PASSWORD are not set, so no Android release was built. See README 'الإعداد'."
+            if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then echo "::error::$MSG"; exit 1; fi
+            echo "::notice::$MSG"
+          fi
+
   apk:
+    needs: precheck
+    if: needs.precheck.outputs.ok == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Check signing secrets
-        env:
-          KS: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-          PW: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-        run: |
-          if [ -z "$KS" ] || [ -z "$PW" ]; then
-            echo "::error::Missing ANDROID_KEYSTORE_BASE64 / ANDROID_KEYSTORE_PASSWORD secrets. An APK signed with a different key can NOT update an installed app. See README 'Signing'."
-            exit 1
-          fi
 
       - uses: actions/setup-node@v4
         with:

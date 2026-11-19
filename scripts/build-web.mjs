@@ -143,6 +143,29 @@ const head = [
 html = html.replace("</head>", `    ${head}\n  </head>`).replace("</body>", '  <script src="/shell.js"></script>\n  <script src="/refund-all.js"></script>\n  <script src="/hall.js"></script>\n  <script src="/theme.js"></script>\n</body>');
 await writeFile("dist/index.html", html);
 
+// The bundle's CONTENT was changed above (backend, media paths), so give it a name that changes with its content.
+// Netlify serves /assets/* as "immutable" for a year: keeping the original file name could make a browser that already
+// cached the old bundle keep running it (and keep talking to the old database).
+{
+  const { createHash } = await import("node:crypto");
+  const jsName = (await readdir("dist/assets")).find((f) => /^index-.*\.js$/.test(f));
+  const code = await readFile(`dist/assets/${jsName}`);
+  const hash = createHash("sha256").update(code).digest("base64url").slice(0, 8);
+  const renamed = `index-${hash}.js`;
+  if (renamed !== jsName) {
+    await cp(`dist/assets/${jsName}`, `dist/assets/${renamed}`);
+    await rm(`dist/assets/${jsName}`);
+    const before = await readFile("dist/index.html", "utf8");
+    if (!before.includes(jsName)) throw new Error("index.html does not reference the bundle by its original name");
+    await writeFile("dist/index.html", before.split(jsName).join(renamed));
+    for (const f of (await readdir("dist/assets")).filter((x) => x.endsWith(".js") || x.endsWith(".css"))) {
+      const p = `dist/assets/${f}`; const t = await readFile(p, "utf8");
+      if (t.includes(jsName)) await writeFile(p, t.split(jsName).join(renamed));
+    }
+    console.log(`bundle renamed ${jsName} -> ${renamed}`);
+  }
+}
+
 // Service worker: precache the app, update automatically. Backend calls (Supabase) are never cached.
 const { count, size } = await generateSW({
   swDest: "dist/sw.js",
