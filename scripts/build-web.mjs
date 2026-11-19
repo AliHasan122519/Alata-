@@ -1,7 +1,7 @@
 // Builds ./dist = the mirrored site (./site) + the app shell (PWA manifest, service worker, Android helpers).
 //   npm run build
 // Env: GITHUB_REPO="owner/repo"  -> enables the Android in-app update check (set by the release workflow).
-import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { cp, mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { generateSW } from "workbox-build";
 
@@ -12,6 +12,21 @@ await mkdir("dist", { recursive: true });
 await cp("site", "dist", { recursive: true });
 if (existsSync("public")) await cp("public", "dist", { recursive: true });
 await cp("shell/shell.js", "dist/shell.js");
+await cp("shell/refund-all.js", "dist/refund-all.js");
+
+// The site talks to Supabase with a public (anon) key that is already shipped inside its bundle.
+// The admin add-on needs the same URL + key, so read them from the mirrored bundle.
+const bundleFile = (await readdir("site/assets")).find((f) => /^index-.*\.js$/.test(f));
+const bundle = await readFile(`site/assets/${bundleFile}`, "utf8");
+const supaUrl = (bundle.match(/https:\/\/([a-z0-9]+)\.supabase\.co/) || [])[0] || "";
+const supaRef = supaUrl.replace(/^https:\/\//, "").split(".")[0];
+const supaKey = (bundle.match(/eyJ[A-Za-z0-9_-]{15,}\.[A-Za-z0-9_-]{15,}\.[A-Za-z0-9_-]{15,}/g) || []).find((jwt) => {
+  try {
+    const payload = JSON.parse(Buffer.from(jwt.split(".")[1], "base64url").toString());
+    return payload.role === "anon" && payload.ref === supaRef;
+  } catch { return false; }
+}) || "";
+if (!supaUrl || !supaKey) throw new Error("Could not find the Supabase URL/key in the site bundle");
 
 await writeFile(
   "dist/manifest.webmanifest",
@@ -51,8 +66,10 @@ const head = [
   '<link rel="apple-touch-icon" href="/apple-touch-icon.png">',
   '<link rel="icon" type="image/png" sizes="192x192" href="/pwa-192x192.png">',
   repo ? `<meta name="github-repo" content="${repo}">` : "",
+  `<meta name="supabase-url" content="${supaUrl}">`,
+  `<meta name="supabase-key" content="${supaKey}">`,
 ].filter(Boolean).join("\n    ");
-html = html.replace("</head>", `    ${head}\n  </head>`).replace("</body>", '  <script src="/shell.js"></script>\n</body>');
+html = html.replace("</head>", `    ${head}\n  </head>`).replace("</body>", '  <script src="/shell.js"></script>\n  <script src="/refund-all.js"></script>\n</body>');
 await writeFile("dist/index.html", html);
 
 // Service worker: precache the app, update automatically. Backend calls (Supabase) are never cached.
