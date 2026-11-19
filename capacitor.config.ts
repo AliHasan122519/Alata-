@@ -6,7 +6,6 @@ const config: CapacitorConfig = {
   webDir: "dist",
   backgroundColor: "#F0EADC",
   android: {
-    // Only the Supabase backend + GitHub (updates) + WhatsApp are reachable; keep everything else blocked.
     allowMixedContent: false,
   },
   plugins: {

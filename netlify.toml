@@ -6,17 +6,22 @@
 [build.environment]
   NODE_VERSION = "22"
 
-# Single-page app: deep links such as /admin must serve index.html
+# Single-page app: any path serves index.html
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
 
-# The service worker and manifest must never be cached, or installed copies would not see updates
+# The service worker, shell and manifest must never be cached, or installed copies would not see updates
 [[headers]]
   for = "/sw.js"
   [headers.values]
     Cache-Control = "no-cache, no-store, must-revalidate"
+
+[[headers]]
+  for = "/shell.js"
+  [headers.values]
+    Cache-Control = "no-cache"
 
 [[headers]]
   for = "/index.html"

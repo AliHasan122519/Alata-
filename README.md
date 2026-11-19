@@ -1,69 +1,63 @@
 # متجر العطاء — نسخة الويب (iPhone) + تطبيق أندرويد (APK)
 
-نسخة طبق الأصل من تطبيق **متجر العطاء** (نفس الشاشات والقوائم والأسماء والألوان والخطوط)،
-وتتصل بنفس قاعدة بيانات Supabase، فكل المنتجات والحسابات والطلبات مشتركة مع النسخة الأصلية.
+**نسخة طبق الأصل** من موقعك المنشور على Lovable (`giving-joy-store.lovable.app`): نفس الكود المُجمَّع للموقع
+(نفس الشاشات والمراحل الدراسية والطلبة بالأسماء ولوحة المشرف والـ PDF وصوت الدفع)، ونفس قاعدة بيانات Supabase.
+حُذفت منه فقط شارة «Edit with Lovable» وسكربت التحليلات.
 
 | المنصة | كيف تصل للمستخدم | كيف يصله التحديث |
 |---|---|---|
 | **الويب / iPhone** (PWA) | رابط Netlify ← «إضافة إلى الشاشة الرئيسية» | تلقائياً، بدون أي خطوة من المستخدم |
-| **أندرويد** (APK) | ملف APK من صفحة Releases | يظهر داخل التطبيق «يتوفر تحديث جديد» ← زر «تحديث الآن» ← تحميل وتثبيت من داخل التطبيق |
+| **أندرويد** (APK) | ملف APK من صفحة Releases | تظهر داخل التطبيق «يتوفر تحديث جديد» ← «تحديث الآن» ← تحميل وتثبيت من داخل التطبيق |
 
-## الإعداد (مرة واحدة فقط)
+## كيف يعمل التحديث؟
 
-1. **المستودع**: أنشئ مستودعاً **عاماً (Public)** على GitHub، وادفع هذا المشروع إلى الفرع `main`.
-2. **ربط Netlify بالمستودع** (ليتحدّث الموقع تلقائياً مع كل دفع): موقعك `alataa-store` منشور بالفعل. من Netlify: *Project configuration → Build & deploy → Continuous deployment → Link repository* واختر مستودع GitHub والفرع `main`. إعدادات البناء جاهزة في `netlify.toml` فلا تحتاج تغيير شيء.
-3. **مفتاح توقيع الأندرويد** (يلزم ليقبل أندرويد التحديث فوق النسخة المثبّتة):
-   *Settings → Secrets and variables → Actions → New repository secret*، وأضف سرّين:
-   - `ANDROID_KEYSTORE_BASE64` ← محتوى الملف `alataa-release.jks.b64`
+```
+تعدّل في Lovable ثم تضغط Publish
+        │
+        ▼   (كل ساعتين تلقائياً، أو يدوياً: Actions ← Sync from Lovable ← Run workflow)
+GitHub ينسخ الموقع المنشور إلى المجلد site/
+        ├─► Netlify ينشر الموقع ← نسخ iPhone والويب تتحدث لوحدها
+        └─► GitHub يبني APK جديداً (v1.0.N) ويصدره ← تطبيق أندرويد يعرض نافذة التحديث
+```
+
+- المجلد `site/` هو النسخة المطابقة للموقع الأصلي (لا تعدّله يدوياً، يُستبدل عند كل مزامنة).
+- المجلد `shell/` فيه الإضافات الوحيدة فوق الأصل: التحديث التلقائي، وإصلاح «حفظ PDF» وطباعة الإيصال داخل أندرويد، ونافذة التحديث.
+- لرفع رقم الإصدار الرئيسي غيّر `version` في `package.json`.
+
+## الإعداد (مرة واحدة)
+
+1. **المستودع**: عام (Public) — هذا ما يسمح للتطبيق بفحص التحديثات بدون مفاتيح.
+2. **سرّا توقيع أندرويد** (يلزمان ليقبل أندرويد التحديث فوق النسخة المثبّتة):
+   *Settings ← Secrets and variables ← Actions ← New repository secret*
+   - `ANDROID_KEYSTORE_BASE64` ← محتوى `alataa-release.jks.b64`
    - `ANDROID_KEYSTORE_PASSWORD` ← كلمة المرور
-   > احتفظ بنسخة من ملف المفتاح وكلمته في مكان آمن. **إذا ضاع فلن تستطيع تحديث التطبيق المثبّت** (سيحتاج المستخدمون لحذفه وتثبيته من جديد).
-   > لا ترفع الملف إلى المستودع أبداً.
-4. شغّل أول مرة للأندرويد: *Actions → Release Android APK → Run workflow* .
 
-بعدها:
-- رابط الموقع: **https://alataa-store.netlify.app**
-- ملف الـ APK: *Releases ← أحدث إصدار ← giving-store-vX.X.X.apk*
+   > احتفظ بنسخة من ملف المفتاح وكلمته. **إذا ضاع فلن تستطيع تحديث التطبيق المثبّت.** ولا ترفعه إلى المستودع أبداً.
+3. **ربط Netlify** (للنشر التلقائي): *Project configuration ← Build & deploy ← Continuous deployment ← Link repository*، اختر المستودع والفرع `main`. إعدادات البناء في `netlify.toml`.
+4. شغّل مرة: *Actions ← Release Android APK ← Run workflow*.
 
-## كيف تحدّث التطبيق؟
-
-كل دفع (push) إلى `main` يفعل التالي تلقائياً:
-
-1. **الموقع/iPhone**: تبنيه Netlify وتنشره تلقائياً، وتصل النسخة الجديدة لكل من فتح التطبيق (Service Worker بتحديث تلقائي).
-2. **أندرويد**: يُبنى APK موقّع برقم إصدار جديد `1.0.<رقم التشغيل>` وينشر كـ Release. التطبيق المثبّت يفحص آخر Release عند الفتح وعند العودة إليه،
-   ويعرض نافذة «يتوفر تحديث جديد» مع ملاحظات التحديث (من رسائل الـ commits).
-
-لرفع رقم الإصدار الرئيسي غيّر `version` في `package.json` (مثلاً `1.0.0` ← `1.1.0`).
+> GitHub يوقف الـ workflows المجدولة بعد 60 يوماً بدون أي نشاط في المستودع؛ شغّل «Sync from Lovable» يدوياً لإعادة تفعيلها.
 
 ## التثبيت
 
 - **iPhone**: افتح رابط الموقع في **Safari** ← زر المشاركة ← **إضافة إلى الشاشة الرئيسية**.
-- **أندرويد**: نزّل ملف APK من Releases وثبّته (يطلب السماح بالتثبيت من المتصفح مرة واحدة).
-  أول مرة يضغط المستخدم «تحديث الآن» سيطلب أندرويد السماح للتطبيق بتثبيت التطبيقات، ثم يكمل تلقائياً.
+- **أندرويد**: نزّل APK من Releases وثبّته. أول تحديث من داخل التطبيق سيطلب منك السماح بالتثبيت من التطبيق مرة واحدة.
 
-## ملاحظات مهمة
-
-- **Supabase**: عنوان `alataa-store.netlify.app` ليس بالضرورة ضمن *Authentication → URL Configuration → Redirect URLs*.
-  إن كان تأكيد البريد مفعّلاً، أضف رابط الموقع هناك. (الدخول بالبريد وكلمة المرور يعمل بدونه.)
-- مفتاح Supabase في `.env` هو المفتاح **العام (publishable)** المخصص للتطبيقات الأمامية، والحماية الفعلية عبر سياسات RLS في `supabase/migrations`.
-- في أندرويد فتح واتساب يتم عبر Intent مباشر؛ وعلى الويب عبر `wa.me` (مع بديل إذا حجب المتصفح النافذة).
-
-## التطوير محلياً
+## أوامر محلية
 
 ```bash
 npm install
-npm run dev          # الويب على http://localhost:8080
-npm test             # اختبارات
-npm run typecheck
-npm run icons        # إعادة توليد الأيقونات وشاشة البداية من assets/logo-source.webp
-npm run android:sync # بناء الويب ونسخه لمشروع الأندرويد
-npm run android:open # فتح Android Studio
+npm run sync          # يسحب أحدث نسخة منشورة من Lovable إلى site/
+npm run build         # يبني dist/ (الموقع + PWA)
+npm run icons         # يعيد توليد الأيقونات من assets/logo-source.webp
+npm run android:sync  # يبني ويزامن مشروع الأندرويد
 ```
 
-بناء APK محلياً (يحتاج JDK 21 وAndroid SDK 36):
+بناء APK محلياً (JDK 21 + Android SDK 36):
 
 ```bash
-npm run build && npx cap sync android
-cd android && ./gradlew assembleRelease -PappVersionName=1.0.1 -PappVersionCode=1
+GITHUB_REPO=<owner>/<repo> npm run android:sync
+cd android && ./gradlew assembleRelease -PappVersionName=1.0.1 -PappVersionCode=101
 ```
 
-للتوقيع محلياً عيّن المتغيرات `ANDROID_KEYSTORE_FILE` و`ANDROID_KEYSTORE_PASSWORD` قبل الأمر.
+للتوقيع محلياً عيّن `ANDROID_KEYSTORE_FILE` و`ANDROID_KEYSTORE_PASSWORD` قبل الأمر.
