@@ -151,7 +151,10 @@
     var pre = [], plan = [];
     try {
       if (method === "PATCH") {
-        if (typeof body.balance === "number") {
+        // Spending at checkout (balance -> 0) never earns anything, and the startup reconcile already gave every student a
+        // ledger row, so skip the extra requests: the student must not wait for them.
+        var skipPrep = body.balance === 0 && seededOnce;
+        if (typeof body.balance === "number" && !skipPrep) {
           pre = await preState(url);
           var changed = pre.filter(function (b0) { return body.balance !== n0(b0.balance); });
           await Promise.all(changed.map(ensureRow));                              // keep the points they hold now on the ledger
@@ -197,6 +200,7 @@
   }
 
   /* ------------------------------------------------------------------ reconcile + read for the wall */
+  var seededOnce = false;
   async function loadWall() {
     var r = await Promise.all([
       rest("GET", "buyers?select=id,name,balance,stage"),
@@ -223,6 +227,7 @@
         writeRow(b.id, v).catch(function () {});
       }
     });
+    seededOnce = true;
     return Object.keys(rows).map(function (id) { var v = rows[id]; return { id: id, name: v.name, stage: v.stage || null, earned: n0(v.earned) }; });
   }
 
