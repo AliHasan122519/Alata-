@@ -2,6 +2,10 @@
 [build]
   command = "npm run build"
   publish = "dist"
+  # Save build credits: only rebuild when something that can change the WEBSITE changed.
+  # Changes to README, android/, releases/ and .github/ are skipped (exit 0 = skip, exit 1 = build).
+  # With no previous deploy to compare against, git diff fails and the site is built (safe).
+  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- site shell fonts public config scripts package.json package-lock.json netlify.toml"
 
 [build.environment]
   NODE_VERSION = "22"
