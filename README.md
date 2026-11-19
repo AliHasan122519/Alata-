@@ -56,3 +56,5 @@ npm run icons         # يعيد توليد الأيقونات من assets/logo-
 npm run android:sync  # يبني ويزامن مشروع الأندرويد
 ```
 بناء APK (JDK 21 + Android SDK 36): `cd android && ./gradlew assembleRelease -PappVersionName=1.0.3 -PappVersionCode=103` مع ضبط `ANDROID_KEYSTORE_FILE` و`ANDROID_KEYSTORE_PASSWORD`.
+
+<!-- deploy test 2026-11-19T17:09:55Z -->
