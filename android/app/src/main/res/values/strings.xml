@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">متجر العطاء</string>
+    <string name="title_activity_main">متجر العطاء</string>
+    <string name="package_name">com.alataa.store</string>
+    <string name="custom_url_scheme">com.alataa.store</string>
+</resources>
