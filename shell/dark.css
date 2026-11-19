@@ -28,15 +28,19 @@ html.dark [data-sonner-toaster] {
 }
 html.dark ::-webkit-scrollbar-thumb { background: hsl(230 15% 30%); }
 
-/* Theme toggle (top centre, below modals, above the sticky headers) */
+/* Theme toggle: sits at the far top corner (left). Inline inside the page header on the shop / admin screens,
+   floating in the top-left corner on the screens that have no header (landing, names). */
 #alataa-theme-toggle {
-  position: fixed; z-index: 40; left: 50%; transform: translateX(-50%);
-  top: calc(env(safe-area-inset-top, 0px) + 6px);
-  width: 32px; height: 32px; border-radius: 999px; padding: 0;
-  display: flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; border-radius: 999px; padding: 0; flex: 0 0 auto;
+  display: inline-flex; align-items: center; justify-content: center;
   background: hsl(var(--card)); color: hsl(var(--foreground));
   border: 1px solid hsl(var(--border)); box-shadow: var(--shadow-soft);
   cursor: pointer; -webkit-tap-highlight-color: transparent;
 }
-#alataa-theme-toggle:active { transform: translateX(-50%) scale(.94); }
-#alataa-theme-toggle svg { width: 17px; height: 17px; }
+#alataa-theme-toggle.floating {
+  position: fixed; z-index: 40; left: 10px;
+  top: calc(env(safe-area-inset-top, 0px) + 10px);
+  width: 36px; height: 36px;
+}
+#alataa-theme-toggle:active { transform: scale(.94); }
+#alataa-theme-toggle svg { width: 18px; height: 18px; }

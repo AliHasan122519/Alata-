@@ -1,0 +1,13 @@
+/* Site font: Dubai Bold (supplied by the owner). Only the Bold file exists, so it is mapped to every weight
+   (otherwise the browser would fake-bold it). Add Regular/Medium files later to get a lighter body text. */
+@font-face {
+  font-family: "Dubai Alataa";
+  src: url("/fonts/Dubai-Bold.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+html, body, button, input, textarea, select, h1, h2, h3, h4, h5, h6, p, span, div, label, a, td, th, li,
+[data-sonner-toaster], [role="dialog"] {
+  font-family: "Dubai Alataa", system-ui, -apple-system, "Segoe UI", sans-serif;
+}

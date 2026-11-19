@@ -129,7 +129,7 @@
   function showDialog(rel) {
     if (dialog) return;
     var primary = "linear-gradient(135deg,hsl(16 85% 55%),hsl(28 92% 62%))";
-    var overlay = el("div", "position:fixed;inset:0;z-index:2147483000;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center;font-family:Tajawal,system-ui,sans-serif;");
+    var overlay = el("div", "position:fixed;inset:0;z-index:2147483000;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center;font-family:inherit;");
     overlay.setAttribute("dir", "rtl");
     var card = el("div", "width:100%;max-width:480px;background:#fff;border-radius:24px 24px 0 0;padding:24px 20px calc(20px + env(safe-area-inset-bottom));box-shadow:0 -10px 40px rgba(0,0,0,.25);text-align:center;color:hsl(230 35% 15%);");
     var icon = el("div", "width:64px;height:64px;margin:0 auto 12px;border-radius:20px;background:" + primary + ";display:flex;align-items:center;justify-content:center;font-size:30px;", "⬇️");

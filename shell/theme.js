@@ -31,6 +31,23 @@
     if (isAndroid) cap.nativePromise("ApkInstaller", "setTheme", { dark: d, color: d ? BG.dark : BG.light }).catch(function () {});
   }
 
+  // Where the button lives: inside the header's left-most cluster when there is a header, else floating top-left.
+  function place() {
+    if (!btn) return;
+    var header = document.querySelector("header");
+    var target = null;
+    if (header) {
+      target = header.querySelector(".flex.items-center.gap-2:last-child") || header.querySelector(":scope > div.flex.items-center.justify-between");
+    }
+    if (target) {
+      if (btn.parentElement !== target || btn !== target.lastElementChild) target.append(btn);
+      btn.classList.remove("floating");
+    } else {
+      if (btn.parentElement !== document.body) document.body.append(btn);
+      btn.classList.add("floating");
+    }
+  }
+
   function mount() {
     btn = document.createElement("button");
     btn.id = "alataa-theme-toggle";
@@ -38,6 +55,12 @@
     btn.addEventListener("click", function () { save(isDark() ? "light" : "dark"); apply(); });
     document.body.append(btn);
     apply();
+    place();
+    var queued = false;
+    new MutationObserver(function () {
+      if (queued) return; queued = true;
+      requestAnimationFrame(function () { queued = false; place(); });
+    }).observe(document.body, { childList: true, subtree: true });
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", mount); else mount();
 

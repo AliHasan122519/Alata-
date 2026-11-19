@@ -14,6 +14,9 @@ if (existsSync("public")) await cp("public", "dist", { recursive: true });
 await cp("shell/shell.js", "dist/shell.js");
 await cp("shell/refund-all.js", "dist/refund-all.js");
 await cp("shell/theme.js", "dist/theme.js");
+await cp("shell/hall.js", "dist/hall.js");
+await cp("fonts", "dist/fonts", { recursive: true });
+const fontCss = await readFile("shell/font.css", "utf8");
 const darkCss = await readFile("shell/dark.css", "utf8");
 const themeInit = await readFile("shell/theme-init.js", "utf8");
 
@@ -59,6 +62,7 @@ await writeFile(
 
 // Inject the shell into the (otherwise untouched) original index.html
 let html = await readFile("dist/index.html", "utf8");
+html = html.replace(/<link[^>]*fonts\.(googleapis|gstatic)\.com[^>]*>\s*/g, "");
 const head = [
   '<link rel="manifest" href="/manifest.webmanifest">',
   '<meta name="theme-color" content="#FBF8F3">',
@@ -71,17 +75,19 @@ const head = [
   repo ? `<meta name="github-repo" content="${repo}">` : "",
   `<script>${themeInit}</script>`,
   `<style id="alataa-dark">${darkCss}</style>`,
+  `<style id="alataa-font">${fontCss}</style>`,
+  `<link rel="preload" href="/fonts/Dubai-Bold.woff2" as="font" type="font/woff2" crossorigin>`,
   `<meta name="supabase-url" content="${supaUrl}">`,
   `<meta name="supabase-key" content="${supaKey}">`,
 ].filter(Boolean).join("\n    ");
-html = html.replace("</head>", `    ${head}\n  </head>`).replace("</body>", '  <script src="/shell.js"></script>\n  <script src="/refund-all.js"></script>\n  <script src="/theme.js"></script>\n</body>');
+html = html.replace("</head>", `    ${head}\n  </head>`).replace("</body>", '  <script src="/shell.js"></script>\n  <script src="/refund-all.js"></script>\n  <script src="/hall.js"></script>\n  <script src="/theme.js"></script>\n</body>');
 await writeFile("dist/index.html", html);
 
 // Service worker: precache the app, update automatically. Backend calls (Supabase) are never cached.
 const { count, size } = await generateSW({
   swDest: "dist/sw.js",
   globDirectory: "dist",
-  globPatterns: ["**/*.{html,js,css,png,svg,ico,mp3,webmanifest}"],
+  globPatterns: ["**/*.{html,js,css,png,svg,ico,mp3,webmanifest,woff2}"],
   globIgnores: ["sw.js", "workbox-*.js"],
   maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
   navigateFallback: "/index.html",

@@ -69,6 +69,13 @@
    */
   async function execute(orders, products, buyers, opts) {
     opts = opts || {};
+    // points handed back are not "earned": tell the Hall of Fame ledger (shell/hall.js) to ignore these balance changes
+    window.__hallPause = (window.__hallPause || 0) + 1;
+    try { return await executeInner(orders, products, buyers, opts); }
+    finally { window.__hallPause = Math.max(0, (window.__hallPause || 1) - 1); }
+  }
+
+  async function executeInner(orders, products, buyers, opts) {
     var stock = {}; products.forEach(function (p) { stock[p.id] = Number(p.stock) || 0; });
     var bal = {}; buyers.forEach(function (b) { bal[b.name] = Number(b.balance) || 0; });
     var res = { orders: 0, units: 0, points: 0, buyers: {}, missingUnits: 0, skippedBuyers: {} };
@@ -143,7 +150,7 @@
   function overlay(text) {
     var o = document.createElement("div");
     o.setAttribute("dir", "rtl");
-    o.style.cssText = "position:fixed;inset:0;z-index:2147483000;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;font-family:Tajawal,system-ui,sans-serif;padding:16px;";
+    o.style.cssText = "position:fixed;inset:0;z-index:2147483000;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;font-family:inherit;padding:16px;";
     var c = document.createElement("div");
     c.style.cssText = "background:#fff;border-radius:20px;padding:24px 20px;max-width:360px;width:100%;text-align:center;color:hsl(230 35% 15%);box-shadow:0 10px 40px rgba(0,0,0,.3);";
     var t = document.createElement("div");
