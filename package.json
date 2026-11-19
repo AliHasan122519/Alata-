@@ -6,7 +6,6 @@
   "scripts": {
     "build": "node scripts/build-web.mjs",
     "icons": "node scripts/generate-icons.mjs",
-    "sync": "node scripts/sync-from-lovable.mjs",
     "android:sync": "npm run build && cap sync android",
     "android:open": "cap open android"
   },

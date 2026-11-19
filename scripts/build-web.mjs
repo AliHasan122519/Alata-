@@ -11,6 +11,38 @@ await rm("dist", { recursive: true, force: true });
 await mkdir("dist", { recursive: true });
 await cp("site", "dist", { recursive: true });
 if (existsSync("public")) await cp("public", "dist", { recursive: true });
+
+// ---- Make the copy fully independent of the Lovable platform -------------------------------------------------
+// (a) media files: /__l5e/assets-v1/<uuid>/<file>  ->  /media/<file>
+// (b) dormant "Lovable preview" integration inside the bundle (only active on *.lovableproject.com / inside the Lovable editor)
+// (c) share-preview image: served from our own site instead of Lovable's storage
+const SITE_URL = (process.env.SITE_URL || "https://alataa-store.netlify.app").replace(/\/$/, "");
+await mkdir("dist/media", { recursive: true });
+for (const f of (await readdir("dist/assets")).filter((x) => x.endsWith(".js") || x.endsWith(".css"))) {
+  const path = `dist/assets/${f}`;
+  let t = await readFile(path, "utf8");
+  t = t.replace(/\/__l5e\/assets-v1\/[0-9a-f-]{36}\/([A-Za-z0-9._-]+)/g, (_m, name) => `/media/${name}`);
+  t = t.split("lovable-preview-auth").join("preview-auth")
+       .split("lovableproject-dev.com").join("preview-dev.invalid")
+       .split("lovableproject.com").join("preview.invalid")
+       .split("gpt-eng.com").join("preview-eng.invalid")
+       .split("lovable\\.dev").join("preview-host\\.invalid")
+       .split("gptengineer\\.app").join("preview-eng\\.invalid")
+       .split("lovable.dev").join("preview-host.invalid")
+       .split("lovable.app").join("preview-app.invalid")
+       .split("gptengineer.run").join("preview-run.invalid")
+       .split("gptengineer.app").join("preview-eng.invalid")
+       .replace(/dfbc5eee-52b5-4942-b563-efb6e6996aab/g, "alataa-store");
+  await writeFile(path, t);
+}
+// move the media files out of the platform-specific folder
+const mediaRoot = "dist/__l5e/assets-v1";
+if (existsSync(mediaRoot)) {
+  for (const uuid of await readdir(mediaRoot)) for (const file of await readdir(`${mediaRoot}/${uuid}`)) await cp(`${mediaRoot}/${uuid}/${file}`, `dist/media/${file}`);
+  await rm("dist/__l5e", { recursive: true, force: true });
+}
+await rm("dist/placeholder.svg", { force: true });   // Lovable template leftover, unused
+
 await cp("shell/shell.js", "dist/shell.js");
 await cp("shell/refund-all.js", "dist/refund-all.js");
 await cp("shell/theme.js", "dist/theme.js");
@@ -90,6 +122,7 @@ await writeFile(
 // Inject the shell into the (otherwise untouched) original index.html
 let html = await readFile("dist/index.html", "utf8");
 html = html.replace(/<link[^>]*fonts\.(googleapis|gstatic)\.com[^>]*>\s*/g, "");
+html = html.replace(/(<meta[^>]*(?:property="og:image"|name="twitter:image")[^>]*content=")[^"]*(")/g, `$1${SITE_URL}/og-image.png$2`);
 const head = [
   '<link rel="manifest" href="/manifest.webmanifest">',
   '<meta name="theme-color" content="#FBF8F3">',

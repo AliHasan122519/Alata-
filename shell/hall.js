@@ -10,7 +10,7 @@
  *
  * Storage: one row per student in the existing `store_settings` table, key `hall:<student id>`,
  * value { name, stage, earned, updated }. Rows survive deleting orders, resetting the store or deleting the student.
- * Everything is injected on top of the mirrored site (the site code is untouched) and survives "Sync from Lovable".
+ * Everything is injected on top of the mirrored site (the site code is untouched) and survives any update of the site files.
  */
 (function () {
   "use strict";

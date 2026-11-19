@@ -7,8 +7,7 @@
  *   3) re-opens ordering for those students                   (removes their cooldown created by the order)
  *   4) deletes the orders
  *
- * It is injected on top of the mirrored site (the site code itself is untouched), so it survives every
- * "Sync from Lovable". It talks to the same Supabase project the site uses (URL + public key come from the
+ * It is injected on top of the mirrored site (the site code itself is untouched), so it survives every update of the site files. It talks to the same Supabase project the site uses (URL + public key come from the
  * <meta name="supabase-url"> / <meta name="supabase-key"> tags written by scripts/build-web.mjs).
  */
 (function () {

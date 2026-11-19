@@ -56,6 +56,15 @@ ico.writeUInt32LE(fav.length, 14); ico.writeUInt32LE(22, 18);
 writeFileSync("public/favicon.ico", Buffer.concat([ico, fav]));
 console.log("wrote public/favicon.ico");
 
+// --- link-preview image (WhatsApp / social shares): 1200x630, logo centred on the paper colour
+{
+  const logo = await sharp(cutout).resize(520, 520).toBuffer();
+  const og = await sharp({ create: { width: 1200, height: 630, channels: 4, background: flat(CREAM) } })
+    .composite([{ input: logo, left: 340, top: 55 }]).png().toBuffer();
+  writeFileSync("public/og-image.png", og);
+  console.log("wrote public/og-image.png");
+}
+
 // --- Android launcher / splash sources for @capacitor/assets ---
 await compose(1024, 0.86, flat(CREAM), "assets/icon-only.png");
 await compose(1024, 0.62, null, "assets/icon-foreground.png"); // adaptive icon: inside the 66% safe zone
