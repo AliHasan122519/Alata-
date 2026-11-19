@@ -46,11 +46,11 @@ await compose(192, 0.9, flat(CREAM), "public/pwa-192x192.png");
 await compose(512, 0.7, flat(CREAM), "public/pwa-maskable-512x512.png"); // keeps the ring inside the 80% safe zone
 await compose(180, 0.86, flat(CREAM), "public/apple-touch-icon.png");
 
-// favicon.ico (PNG-in-ICO, 48px)
-const fav = await sharp(await compose(256, 0.98, null)).resize(48, 48).png().toBuffer();
+// favicon.ico (PNG-in-ICO, 256px like the original)
+const fav = await sharp(await compose(256, 0.98, null)).resize(256, 256).png().toBuffer();
 const ico = Buffer.alloc(22);
 ico.writeUInt16LE(0, 0); ico.writeUInt16LE(1, 2); ico.writeUInt16LE(1, 4);
-ico[6] = 48; ico[7] = 48;
+ico[6] = 0; ico[7] = 0; // 0 means 256
 ico.writeUInt16LE(1, 10); ico.writeUInt16LE(32, 12);
 ico.writeUInt32LE(fav.length, 14); ico.writeUInt32LE(22, 18);
 writeFileSync("public/favicon.ico", Buffer.concat([ico, fav]));
