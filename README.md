@@ -59,3 +59,4 @@ npm run android:sync  # يبني ويزامن مشروع الأندرويد
 
 <!-- deploy test 2026-11-19T17:09:55Z -->
 <!-- deploy test 2 2026-11-19T17:14:42Z -->
+<!-- auto-deploy check 2026-11-19T18:20:17Z -->
