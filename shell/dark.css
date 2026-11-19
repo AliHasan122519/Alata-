@@ -1,0 +1,42 @@
+/* Dark theme: the site is built entirely on CSS variables, so overriding them re-themes every screen. */
+html.dark {
+  color-scheme: dark;
+  --background: 230 25% 9%;
+  --foreground: 35 25% 94%;
+  --card: 230 22% 13%;
+  --card-foreground: 35 25% 94%;
+  --popover: 230 22% 13%;
+  --popover-foreground: 35 25% 94%;
+  --muted: 230 18% 17%;
+  --muted-foreground: 230 10% 66%;
+  --border: 230 15% 24%;
+  --input: 230 15% 22%;
+  --gradient-card: linear-gradient(180deg, hsl(230 22% 14%), hsl(230 22% 11%));
+  --gradient-warm: linear-gradient(135deg, hsl(230 25% 9%) 0%, hsl(230 22% 11%) 100%);
+  --shadow-soft: 0 4px 20px -4px hsl(0 0% 0% / .45);
+  --shadow-card: 0 8px 30px -8px hsl(0 0% 0% / .5);
+  --sidebar-background: 230 22% 12%;
+  --sidebar-foreground: 35 25% 94%;
+  --sidebar-accent: 230 18% 17%;
+  --sidebar-accent-foreground: 35 25% 94%;
+  --sidebar-border: 230 15% 24%;
+}
+html.dark [data-sonner-toaster] {
+  --normal-bg: hsl(230 22% 13%) !important;
+  --normal-text: hsl(35 25% 94%) !important;
+  --normal-border: hsl(230 15% 24%) !important;
+}
+html.dark ::-webkit-scrollbar-thumb { background: hsl(230 15% 30%); }
+
+/* Theme toggle (top centre, below modals, above the sticky headers) */
+#alataa-theme-toggle {
+  position: fixed; z-index: 40; left: 50%; transform: translateX(-50%);
+  top: calc(env(safe-area-inset-top, 0px) + 6px);
+  width: 32px; height: 32px; border-radius: 999px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: hsl(var(--card)); color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--border)); box-shadow: var(--shadow-soft);
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+#alataa-theme-toggle:active { transform: translateX(-50%) scale(.94); }
+#alataa-theme-toggle svg { width: 17px; height: 17px; }

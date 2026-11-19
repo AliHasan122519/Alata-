@@ -4,7 +4,7 @@ const config: CapacitorConfig = {
   appId: "com.alataa.store",
   appName: "متجر العطاء",
   webDir: "dist",
-  backgroundColor: "#F0EADC",
+  backgroundColor: "#FBF8F3",
   android: {
     allowMixedContent: false,
   },

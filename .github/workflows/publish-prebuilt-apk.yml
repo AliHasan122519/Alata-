@@ -1,0 +1,39 @@
+# Publishes a GitHub Release for every signed APK committed under releases/ that has no release yet.
+# Needs no secrets (the APK is already signed). Handy for the first release or a hotfix built locally;
+# normal updates come from "Release Android APK" (CI-built) once the signing secrets are set.
+#
+#   releases/alataa-store-v1.0.1.apk   (+ optional releases/alataa-store-v1.0.1.txt = release notes)
+name: Publish prebuilt APK
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "releases/*.apk"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create a release for each APK that has none
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          shopt -s nullglob
+          for apk in releases/*.apk; do
+            name=$(basename "$apk" .apk)      # alataa-store-v1.0.1
+            tag="${name##*-}"                 # v1.0.1
+            if gh release view "$tag" >/dev/null 2>&1; then
+              echo "Release $tag already exists, skipping."
+              continue
+            fi
+            notes="releases/$name.txt"
+            [ -f "$notes" ] || echo "تحديث جديد" > "$notes"
+            gh release create "$tag" "$apk" --title "$tag" --notes-file "$notes" --latest
+            echo "Published $tag"
+          done

@@ -13,6 +13,9 @@ await cp("site", "dist", { recursive: true });
 if (existsSync("public")) await cp("public", "dist", { recursive: true });
 await cp("shell/shell.js", "dist/shell.js");
 await cp("shell/refund-all.js", "dist/refund-all.js");
+await cp("shell/theme.js", "dist/theme.js");
+const darkCss = await readFile("shell/dark.css", "utf8");
+const themeInit = await readFile("shell/theme-init.js", "utf8");
 
 // The site talks to Supabase with a public (anon) key that is already shipped inside its bundle.
 // The admin add-on needs the same URL + key, so read them from the mirrored bundle.
@@ -58,7 +61,7 @@ await writeFile(
 let html = await readFile("dist/index.html", "utf8");
 const head = [
   '<link rel="manifest" href="/manifest.webmanifest">',
-  '<meta name="theme-color" content="#F0EADC">',
+  '<meta name="theme-color" content="#FBF8F3">',
   '<meta name="mobile-web-app-capable" content="yes">',
   '<meta name="apple-mobile-web-app-capable" content="yes">',
   '<meta name="apple-mobile-web-app-title" content="متجر العطاء">',
@@ -66,10 +69,12 @@ const head = [
   '<link rel="apple-touch-icon" href="/apple-touch-icon.png">',
   '<link rel="icon" type="image/png" sizes="192x192" href="/pwa-192x192.png">',
   repo ? `<meta name="github-repo" content="${repo}">` : "",
+  `<script>${themeInit}</script>`,
+  `<style id="alataa-dark">${darkCss}</style>`,
   `<meta name="supabase-url" content="${supaUrl}">`,
   `<meta name="supabase-key" content="${supaKey}">`,
 ].filter(Boolean).join("\n    ");
-html = html.replace("</head>", `    ${head}\n  </head>`).replace("</body>", '  <script src="/shell.js"></script>\n  <script src="/refund-all.js"></script>\n</body>');
+html = html.replace("</head>", `    ${head}\n  </head>`).replace("</body>", '  <script src="/shell.js"></script>\n  <script src="/refund-all.js"></script>\n  <script src="/theme.js"></script>\n</body>');
 await writeFile("dist/index.html", html);
 
 // Service worker: precache the app, update automatically. Backend calls (Supabase) are never cached.

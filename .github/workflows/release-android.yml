@@ -12,6 +12,7 @@ on:
     paths-ignore:
       - "**.md"
       - "netlify.toml"
+      - "releases/**"
   workflow_dispatch:
 
 permissions:

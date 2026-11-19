@@ -2,7 +2,10 @@ package com.alataa.store;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.content.pm.PackageInfo;
 import android.net.Uri;
 import android.os.Build;
@@ -18,6 +21,8 @@ import android.webkit.WebViewClient;
 import android.widget.Toast;
 
 import androidx.core.content.FileProvider;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
@@ -64,6 +69,34 @@ public class ApkInstallerPlugin extends Plugin {
         } catch (Exception e) {
             call.reject(e.getMessage());
         }
+    }
+
+    // ---------------------------------------------------------------- theme (status bar + window colour)
+    static final String PREFS = "alataa";
+
+    /** Colours the window behind the system bars and picks light/dark status-bar icons. Safe to call on the UI thread. */
+    static void applyTheme(Activity activity, boolean dark, String colorHex) {
+        int color;
+        try { color = Color.parseColor(colorHex); } catch (Exception e) { color = dark ? 0xFF11131D : 0xFFFBF8F3; }
+        activity.getWindow().getDecorView().setBackgroundColor(color);
+        activity.getWindow().setStatusBarColor(color);
+        activity.getWindow().setNavigationBarColor(color);
+        WindowInsetsControllerCompat c = WindowCompat.getInsetsController(activity.getWindow(), activity.getWindow().getDecorView());
+        c.setAppearanceLightStatusBars(!dark);
+        c.setAppearanceLightNavigationBars(!dark);
+    }
+
+    @PluginMethod
+    public void setTheme(final PluginCall call) {
+        final boolean dark = Boolean.TRUE.equals(call.getBoolean("dark", false));
+        final String color = call.getString("color", dark ? "#11131D" : "#FBF8F3");
+        getContext().getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+                .putBoolean("dark", dark).putString("color", color).apply();
+        getActivity().runOnUiThread(() -> {
+            applyTheme(getActivity(), dark, color);
+            try { getBridge().getWebView().setBackgroundColor(Color.parseColor(color)); } catch (Exception ignored) { }
+            call.resolve();
+        });
     }
 
     // ---------------------------------------------------------------- external links
