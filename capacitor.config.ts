@@ -4,7 +4,7 @@ const config: CapacitorConfig = {
   appId: "com.alataa.store",
   appName: "متجر العطاء",
   webDir: "dist",
-  backgroundColor: "#FCF8F3",
+  backgroundColor: "#F0EADC",
   android: {
     // Only the Supabase backend + GitHub (updates) + WhatsApp are reachable; keep everything else blocked.
     allowMixedContent: false,

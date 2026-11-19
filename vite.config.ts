@@ -21,7 +21,7 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       injectRegister: false,
-      includeAssets: ["favicon.ico", "apple-touch-icon.png", "icon.svg"],
+      includeAssets: ["favicon.ico", "apple-touch-icon.png"],
       manifest: {
         name: "متجر العطاء",
         short_name: "متجر العطاء",
@@ -33,7 +33,7 @@ export default defineConfig({
         display: "standalone",
         orientation: "portrait",
         theme_color: "#C91D48",
-        background_color: "#FCF8F3",
+        background_color: "#F0EADC",
         icons: [
           { src: "pwa-192x192.png", sizes: "192x192", type: "image/png" },
           { src: "pwa-512x512.png", sizes: "512x512", type: "image/png" },
